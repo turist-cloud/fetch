@@ -1,35 +1,22 @@
 import toBuffer from 'raw-body';
 import { Server, createServer, IncomingMessage, ServerResponse } from 'http';
 import createFetch from '../src';
-
-function getAddr(server: Server) {
-	const addr = server.address();
-
-	if (!addr || typeof addr === 'string') {
-		throw new Error('Unable to extract the address');
-	}
-
-	const { address, family, port } = addr;
-
-	return { address, family, port };
-}
-
-function listen(server: Server, ...args: any[]) {
-	return new Promise((resolve, reject) => {
-		args.push((err: Error) => {
-			if (err) return reject(err);
-
-			const { address, family, port } = getAddr(server);
-			const host = 'IPv6' === family ? `[${address}]` : address;
-
-			resolve(`http://${host}:${port}`);
-		})
-
-		server.listen(...args);
-	})
-}
+import { getAddr, listen } from './util';
 
 const fetch = createFetch();
+let servers: Server[] = [];
+
+afterEach(() => {
+	while (servers.length) {
+		const server = servers.pop();
+
+		if (!server) {
+			continue;
+		}
+
+		server.close();
+	}
+});
 
 test('retries upon http 500', async () => {
 	let i = 0;
@@ -41,12 +28,13 @@ test('retries upon http 500', async () => {
 			res.end('ha');
 		}
 	});
+	servers.push(server);
+
 	await listen(server);
 
 	const { port } = getAddr(server);
 	const res = await fetch(`http://127.0.0.1:${port}`);
 	const resBody = await res.text();
-	server.close();
 
 	expect(resBody).toBe('ha');
 });
@@ -77,6 +65,8 @@ test('supports buffer request body', async () => {
 
 		res.end(JSON.stringify({ body: body.toString() }));
 	});
+	servers.push(server);
+
 	await listen(server);
 
 	const { port } = getAddr(server);
@@ -85,7 +75,6 @@ test('supports buffer request body', async () => {
 		body: Buffer.from('foo')
 	});
 	const body = await res.json();
-	server.close();
 
 	expect(body).toEqual({ body: 'foo' })
 });

@@ -90,17 +90,6 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			opts.headers.set('Content-Length', `${Buffer.byteLength(opts.body)}`);
 		}
 
-		// Check the agent on redirections
-		opts.onRedirect = (res: Response, redirectOpts: FetchOptions) => {
-			const location = res.headers.get('Location');
-
-			if (!location) {
-				throw new Error('Redirect failed');
-			}
-
-			redirectOpts.agent = getAgent(location, agentOpts);
-		};
-
 		const retryOpts = Object.assign({
 			// timeouts will be [ 10, 50, 250 ]
 			minTimeout: MIN_TIMEOUT,
@@ -159,6 +148,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			if (!location) {
 				throw new Error('"Location" header is missing');
 			}
+			redirectOpts.agent = getAgent(location, agentOpts);
 
 			const host = parseUrl(location).host;
 			if (!host) {
