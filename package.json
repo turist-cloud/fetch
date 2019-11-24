@@ -1,9 +1,9 @@
 {
-  "name": "@zeit/fetch",
-  "version": "5.1.1",
+  "name": "@olliv/fetch",
+  "version": "6.0.0",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "prettier": "find . -path './**/*.ts' -not -path '*/node_modules/*'  -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt -r \"$n\" || exit 1; done' sh {} +",
     "git-pre-commit": "find . -path './**/*.ts' -not -path '*/node_modules/*' -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt --verify \"$n\" || exit 1; done' sh {} +",
@@ -12,9 +12,6 @@
   },
   "peerDependencies": {
     "node-fetch": "2"
-  },
-  "eslintConfig": {
-    "extends": "@zeit/eslint-config-node"
   },
   "devDependencies": {
     "@types/async-retry": "1.2.1",
