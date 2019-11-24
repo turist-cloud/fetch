@@ -1,7 +1,7 @@
 import { isIP } from 'net';
 import * as http from 'http';
 import * as https from 'http';
-import {parse as parseUrl, format as formatUrl} from 'url';
+import { parse as parseUrl, format as formatUrl } from 'url';
 import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
 import createDebug from 'debug';
@@ -36,7 +36,7 @@ function getDefaultHttpGlobalAgent(agentOpts: http.AgentOptions) {
 
 function getDefaultHttpsGlobalAgent(agentOpts: https.AgentOptions) {
 	return defaultHttpsGlobalAgent = defaultHttpsGlobalAgent ||
-	// @ts-ignore
+		// @ts-ignore
 		(debug('init https agent'), new HttpAgent.HttpsAgent(agentOpts));
 }
 
@@ -52,7 +52,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		if (!opts.agent) {
 			// Add default `agent` if none was provided
 			// @ts-ignore
-			opts.agent = getAgent(url, {AGENT_OPTIONS, ...agentOpts});
+			opts.agent = getAgent(url, { AGENT_OPTIONS, ...agentOpts });
 		}
 
 		opts.redirect = 'manual';
@@ -134,7 +134,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 					return res;
 				}
 			} catch (err) {
-				const {method = 'GET'} = opts;
+				const { method = 'GET' } = opts;
 				debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
 				throw err;
 			}
@@ -146,8 +146,8 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 
 			// per fetch spec, for POST request with 301/302 response, or any request with 303 response, use GET when following redirect
 			if (
-			res.status === 303 ||
-			((res.status === 301 || res.status === 302) && opts.method === 'POST')
+				res.status === 303 ||
+				((res.status === 301 || res.status === 302) && opts.method === 'POST')
 			) {
 				redirectOpts.method = 'GET';
 				redirectOpts.body = undefined;
