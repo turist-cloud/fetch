@@ -7,7 +7,7 @@
   "scripts": {
     "prettier": "find . -path './**/*.ts' -not -path '*/node_modules/*'  -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt -r \"$n\" || exit 1; done' sh {} +",
     "git-pre-commit": "find . -path './**/*.ts' -not -path '*/node_modules/*' -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt --verify \"$n\" || exit 1; done' sh {} +",
-    "test": "best --verbose",
+    "test": "jest",
     "build": "rm -rf ./dist && ncc build src/index.ts -m -s -o dist"
   },
   "peerDependencies": {
@@ -19,20 +19,26 @@
   "devDependencies": {
     "@types/async-retry": "1.2.1",
     "@types/debug": "4.1.5",
-    "@zeit/best": "0.5.2",
+    "@types/jest": "24.0.23",
     "@zeit/fetch-cached-dns": "1.2.0",
     "@zeit/fetch-retry": "4.0.0",
     "@zeit/git-hooks": "0.1.4",
+    "@zeit/ncc": "0.20.5",
     "agentkeepalive": "4.1.0",
-    "async-listen": "1.0.0",
     "debug": "3.1.0",
+    "jest": "24.9.0",
     "lint-staged": "8.1.4",
     "node-fetch": "2.6.0",
     "raw-body": "2.3.2",
+    "ts-jest": "24.2.0",
     "typescript": "3.7.0-beta",
     "typescript-formatter": "7.2.2"
   },
   "dependencies": {
     "@types/node-fetch": "2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "verbose": true
   }
 }

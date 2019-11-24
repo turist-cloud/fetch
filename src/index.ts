@@ -179,7 +179,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 	};
 }
 
-export default function setup(fetch: Fetch, options?: AgentOptions): Fetch {
+export default function setup(fetch?: Fetch, options?: AgentOptions): Fetch {
 	if (!fetch) {
 		fetch = require('node-fetch');
 	}
@@ -199,6 +199,10 @@ export default function setup(fetch: Fetch, options?: AgentOptions): Fetch {
 	}
 
 	fetch = setupFetch(fetch, options);
+
+	if (!fetch) {
+		throw new Error('Unable to setup fetch');
+	}
 
 	return fetch;
 }
