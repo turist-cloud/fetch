@@ -4,6 +4,7 @@ import * as https from 'http';
 import { parse as parseUrl, format as formatUrl } from 'url';
 import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
+const {Readable} = require('stream');
 import createDebug from 'debug';
 import retry from 'async-retry';
 import { AgentOptions, Fetch, FetchOptions } from './types';
@@ -83,7 +84,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		// Convert Object bodies to JSON
-		if (opts.body && typeof opts.body === 'object' && !Buffer.isBuffer(opts.body)) {
+		if (opts.body && typeof opts.body === 'object' && !(Buffer.isBuffer(opts.body) || opts.body instanceof Readable)) {
 			opts.body = JSON.stringify(opts.body);
 			opts.headers.set('Content-Type', 'application/json');
 			opts.headers.set('Content-Length', `${Buffer.byteLength(opts.body)}`);
