@@ -4,7 +4,7 @@ import * as https from 'http';
 import { parse as parseUrl, format as formatUrl } from 'url';
 import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
-const { Readable } = require('stream');
+import { Readable } from 'stream';
 import createDebug from 'debug';
 import retry from 'async-retry';
 import { AgentOptions, Fetch, FetchOptions } from './types';
