@@ -1,12 +1,12 @@
 import dns from 'dns';
-import LRU, { Options as LRUOptions, Cache } from 'lru-cache';
+import LRU from 'lru-cache';
 import retry, { Options as RetryOptions } from 'async-retry';
 import resolve4 from './resolve4';
 import resolve6 from './resolve6';
 
 const lruOptions = { max: 500 };
-let cache4: Cache<string, string | Promise<string>>;
-let cache6: Cache<string, string | Promise<string>>;
+let cache4: LRU<string, string | Promise<string>>;
+let cache6: LRU<string, string | Promise<string>>;
 
 type Options = {
 	ipv6?: boolean;

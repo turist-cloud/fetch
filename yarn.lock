@@ -384,10 +384,10 @@
   dependencies:
     jest-diff "^24.3.0"
 
-"@types/lru-cache@4.1.1":
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/@types/lru-cache/-/lru-cache-4.1.1.tgz#b2d87a5e3df8d4b18ca426c5105cd701c2306d40"
-  integrity sha512-8mNEUG6diOrI6pMqOHrHPDBB1JsrpedeMK9AWGzVCQ7StRRribiT9BRvUmF8aUws9iBbVlgVekOT5Sgzc1MTKw==
+"@types/lru-cache@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/@types/lru-cache/-/lru-cache-5.1.0.tgz#57f228f2b80c046b4a1bd5cac031f81f207f4f03"
+  integrity sha512-RaE0B+14ToE4l6UqdarKPnXwVDuigfFv+5j9Dze/Nqr23yyuqdNvzcZi3xB+3Agvi5R4EOgAksfv3lXX4vBt9w==
 
 "@types/node-fetch@2":
   version "2.5.4"
@@ -400,11 +400,6 @@
   version "12.12.12"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.12.12.tgz#529bc3e73dbb35dd9e90b0a1c83606a9d3264bdb"
   integrity sha512-MGuvYJrPU0HUwqF7LqvIj50RZUX23Z+m583KBygKYUZLlZ88n6w28XRNJRJgsHukLEnLz6w6SvxZoLgbr5wLqQ==
-
-"@types/node@10.12.18":
-  version "10.12.18"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
-  integrity sha512-fh+pAqt4xRzPfqA6eh3Z2y6fyZavRIumvjhaCL753+TVkGKGhpPeyrJG2JftD0T9q4GF00KjefsQ+PQNDdWQaQ==
 
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
@@ -422,32 +417,6 @@
   integrity sha512-K8/LfZq2duW33XW/tFwEAfnZlqIfVsoyRB3kfXdPXYhl0nfM8mmh7GS0jg7WrX2Dgq/0Ha/pR1PaR+BvmWwjiQ==
   dependencies:
     "@types/yargs-parser" "*"
-
-"@zeit/dns-cached-resolve@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@zeit/dns-cached-resolve/-/dns-cached-resolve-2.1.0.tgz#78583010df1683fdb7b05949b75593c9a8641bc1"
-  integrity sha512-KD2zyRZEBNs9PJ3/ob7zx0CvR4wM0oV4G5s5gFfPwmM74GpFbUN2pAAivP2AXnUrJ14Nkh8NumNKOzOyc4LbFQ==
-  dependencies:
-    "@types/async-retry" "1.2.1"
-    "@types/lru-cache" "4.1.1"
-    "@types/node" "10.12.18"
-    async-retry "1.2.3"
-    lru-cache "5.1.1"
-
-"@zeit/fetch-cached-dns@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@zeit/fetch-cached-dns/-/fetch-cached-dns-1.2.0.tgz#2529bea33732df1044f72465b8f7760af7b53d46"
-  integrity sha512-fEKOrDQJy3CewywYVwe2mHsv3H1rITmkfB68h2TiVOz6QWWuXU0C5xBIFG9Ov59sioEQdlk5829PXwJYyx6X0A==
-  dependencies:
-    "@zeit/dns-cached-resolve" "2.1.0"
-
-"@zeit/fetch-retry@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@zeit/fetch-retry/-/fetch-retry-4.0.0.tgz#ad7fe06c4ceb3dcbd76c04db95b1b624ed6fcf3f"
-  integrity sha512-ALXnrCPpiVWha/L3Mm1klPhqmVTKmPQ2dmb5YIsSCrMBJugfhDb42kacVsvQ11vAFRE1LRaJ9Pmw16zEMvQnbw==
-  dependencies:
-    async-retry "^1.1.3"
-    debug "^3.1.0"
 
 "@zeit/git-hooks@0.1.4":
   version "0.1.4"
@@ -642,12 +611,6 @@ async-retry@1.2.3:
   integrity sha512-tfDb02Th6CE6pJUF2gjW5ZVjsgwlucVXOEQMvEX9JgSJMs9gAX+Nz3xRuJBKuUYjTSYORqvDBORdAQ3LU59g7Q==
   dependencies:
     retry "0.12.0"
-
-async-retry@^1.1.3:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/async-retry/-/async-retry-1.2.1.tgz#308c6c4e1d91e63397a4676290334ae9bda7bcb1"
-  dependencies:
-    retry "0.10.1"
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -3469,10 +3432,6 @@ restore-cursor@^2.0.0:
 ret@~0.1.10:
   version "0.1.15"
   resolved "https://registry.yarnpkg.com/ret/-/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
-
-retry@0.10.1:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/retry/-/retry-0.10.1.tgz#e76388d217992c252750241d3d3956fed98d8ff4"
 
 retry@0.12.0:
   version "0.12.0"
