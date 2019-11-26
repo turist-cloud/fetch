@@ -3,12 +3,16 @@
   "version": "6.0.0",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
+  "files": [
+    "dist/"
+  ],
   "main": "dist/index.js",
   "scripts": {
     "prettier": "find . -path './**/*.ts' -not -path '*/node_modules/*'  -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt -r \"$n\" || exit 1; done' sh {} +",
     "git-pre-commit": "find . -path './**/*.ts' -not -path '*/node_modules/*' -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt --verify \"$n\" || exit 1; done' sh {} +",
     "test": "jest",
-    "build": "rm -rf ./dist && ncc build src/index.ts -m -s -o dist"
+    "build": "rm -rf ./dist && ncc build src/index.ts -m -s -o dist",
+    "prepublish": "npm run build"
   },
   "peerDependencies": {
     "node-fetch": "2"

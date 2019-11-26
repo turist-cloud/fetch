@@ -1,0 +1,4 @@
+/__test__
+/dist/__test__
+yarn-error.log
+tsconfig.json
