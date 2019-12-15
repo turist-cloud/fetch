@@ -32,7 +32,7 @@
     "node-fetch": "2.6.0",
     "raw-body": "2.3.2",
     "ts-jest": "24.2.0",
-    "typescript": "3.7.0-beta",
+    "typescript": "3.7.3",
     "typescript-formatter": "7.2.2"
   },
   "dependencies": {
