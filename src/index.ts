@@ -6,7 +6,7 @@ import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
-import retry from 'async-retry';
+import retry from 'async-retry-ng';
 import { AgentOptions, Fetch, FetchOptions } from './types';
 import resolve from './dns-resolve';
 import FetchRetryError from './fetch-retry-error';

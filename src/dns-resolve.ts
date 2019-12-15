@@ -1,6 +1,6 @@
 import dns from 'dns';
 import LRU from 'lru-cache';
-import retry, { Options as RetryOptions } from 'async-retry';
+import retry, { Options as RetryOptions } from 'async-retry-ng';
 import resolve4 from './resolve4';
 import resolve6 from './resolve6';
 
