@@ -1,6 +1,6 @@
 import { isIP } from 'net';
 import { Resolver } from 'dns';
-import dnsResolve, { setupCache } from '../src/dns-resolve';
+import dnsResolve, { setupCache, localhostRegex } from '../src/dns-resolve';
 
 const domains = ['s3.amazonaws.com', 'zeit.co'];
 
@@ -63,3 +63,15 @@ test('should resolve localhost even when resolver fails to resolve localhost', a
 
 	expect(isIP(ip)).toBeTruthy();
 }, 10000);
+
+test('localhostRegex matches .localhost. namespace but no more', async () => {
+	const matches = ['localhost', 'localhost.', 'test.localhost', 'test.localhost.']
+	for (const host of matches) {
+		expect(localhostRegex.test(host)).toBeTruthy();
+	}
+
+	const nonMatches = ['mylocalhost', 'mylocalhost.', 'mylocalhost.com', 'my.localhost.com', 'localhost.example.com']
+	for (const host of nonMatches) {
+		expect(localhostRegex.test(host)).toBeFalsy();
+	}
+})
