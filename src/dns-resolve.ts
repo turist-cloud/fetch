@@ -8,7 +8,7 @@ const lruOptions = { max: 500 };
 let cache4: LRU<string, string | Promise<string>>;
 let cache6: LRU<string, string | Promise<string>>;
 
-const localhostRegex = /(?:\.|^)localhost\.?$/
+export const localhostRegex = /(?:\.|^)localhost\.?$/
 
 type Options = {
 	ipv6?: boolean;
