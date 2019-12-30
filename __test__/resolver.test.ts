@@ -52,3 +52,14 @@ test('Proper error on CNAME pointing to nowhere', async () => {
 	const p = dnsResolve('dns-cached-resolve-test.zeit.rocks');
 	await expect(p).rejects.toThrow('queryA ENOTFOUND dns-cached-resolve-test.zeit.rocks');
 }, 10000);
+
+test('should resolve localhost even when resolver fails to resolve localhost', async () => {
+	const resolver = new Resolver();
+
+	resolver.setServers(['8.8.8.8']);
+	const domain = 'localhost'
+	// @ts-ignore
+	const ip = await dnsResolve(domain, { resolver });
+
+	expect(isIP(ip)).toBeTruthy();
+}, 10000);

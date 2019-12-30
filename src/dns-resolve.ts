@@ -8,6 +8,8 @@ const lruOptions = { max: 500 };
 let cache4: LRU<string, string | Promise<string>>;
 let cache6: LRU<string, string | Promise<string>>;
 
+const localhostRegex = /(?:\.|^)localhost\.?$/
+
 type Options = {
 	ipv6?: boolean;
 	minimumCacheTime?: number;
@@ -41,6 +43,10 @@ export default async function dnsResolve(host: string, options: Options = {}) {
 	const { cache, resolve } = ipv6
 		? { cache: cache6, resolve: resolve6 }
 		: { cache: cache4, resolve: resolve4 };
+
+	if (localhostRegex.test(host)) {
+		return ipv6 ? '::1' : '127.0.0.1'
+	}
 
 	if (refreshCache) {
 		cache.del(host);
