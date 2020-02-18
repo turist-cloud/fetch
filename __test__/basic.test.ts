@@ -56,6 +56,26 @@ test('switches agents on redirect', async () => {
 	expect(res.url).toBe('https://zeit.co/');
 });
 
+test('serializing arbitrary objects as JSON', async () => {
+	const server = createServer(async (req, res) => {
+		const body = await toBuffer(req);
+
+		expect(Buffer.isBuffer(body)).toBeTruthy();
+		expect(body.toString()).toBe('{"key":"value"}');
+
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`, {
+		method: 'POST',
+		body: { key: 'value' }
+	});
+});
+
 test('supports buffer request body', async () => {
 	const server = createServer(async (req, res) => {
 		const body = await toBuffer(req);

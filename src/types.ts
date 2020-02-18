@@ -4,11 +4,12 @@ import { Options as RetryOptions } from 'async-retry-ng';
 import { Request, RequestInit, Response } from 'node-fetch';
 import FetchRetryError from './fetch-retry-error';
 
-export type FetchOptions = RequestInit & {
+export interface FetchOptions extends RequestInit {
 	agent?: https.Agent | http.Agent;
 	retry?: RetryOptions;
 	onRedirect?: (res: Response, redirectOpts: FetchOptions) => void;
 	onRetry?: (error: FetchRetryError, opts: FetchOptions) => void;
+	body?: any; // allows automatic JSON serialization of objects
 }
 
 export type Fetch = {
