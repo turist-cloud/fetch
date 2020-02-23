@@ -1,6 +1,6 @@
 {
   "name": "@olliv/fetch",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
   "files": [
