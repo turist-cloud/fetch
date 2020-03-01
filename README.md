@@ -1,4 +1,4 @@
-# @olliv/fetch
+# @turist/fetch
 
 Opinionated `fetch` optimized for use inside microservices.
 
@@ -16,7 +16,13 @@ if not provided, with the following settings:
 ## How to use
 
 ```js
-const fetch = require('@olliv/fetch').default(require('some-fetch-implementation'))
+const fetch = require('@turist/fetch').default(require('some-fetch-implementation'))
+```
+
+```ts
+import createFetch from '@turist/fetch';
+
+const fetch = createFetch();
 ```
 
 If no fetch implementation is supplied, it will attempt to use peerDep

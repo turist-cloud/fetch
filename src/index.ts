@@ -16,7 +16,7 @@ const MIN_TIMEOUT = 10;
 const MAX_RETRIES = 3;
 const FACTOR = 5;
 
-const debug = createDebug('@olliv/fetch');
+const debug = createDebug('@turist/fetch');
 const isRedirect = (v: number) => ((v / 100) | 0) === 3
 
 const AGENT_OPTIONS = {
