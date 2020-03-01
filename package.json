@@ -1,5 +1,5 @@
 {
-  "name": "@olliv/fetch",
+  "name": "@turist/fetch",
   "version": "6.3.0",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
