@@ -91,7 +91,6 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		const retryOpts = Object.assign({
-			// timeouts will be [ 10, 50, 250 ]
 			minTimeout: MIN_TIMEOUT,
 			retries: MAX_RETRIES,
 			factor: FACTOR,
@@ -114,18 +113,17 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		let res: Response;
 		try {
 			res = await retry(async (_bail, attempt) => {
-				const isRetry = attempt < retryOpts.retries;
-
 				try {
 					const res = await fetch(url, opts);
 
 					debug('status %d', res.status);
-					if (res.status >= 500 && res.status < 600 && isRetry) {
+					if (res.status >= 500 && res.status < 600) {
 						throw new FetchRetryError(res);
 					} else {
 						return res;
 					}
 				} catch (err) {
+					const isRetry = attempt < retryOpts.retries;
 					const { method = 'GET' } = opts;
 					debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
 					throw err;
