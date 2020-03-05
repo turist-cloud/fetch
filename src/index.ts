@@ -14,6 +14,7 @@ import FetchRetryError from './fetch-retry-error';
 // retry settings
 const MIN_TIMEOUT = 10;
 const MAX_RETRIES = 3;
+const MAX_RETRY_AFTER = 30000;
 const FACTOR = 5;
 
 const debug = createDebug('@turist/fetch');
@@ -94,6 +95,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			minTimeout: MIN_TIMEOUT,
 			retries: MAX_RETRIES,
 			factor: FACTOR,
+			maxRetryAfter: MAX_RETRY_AFTER,
 		}, opts.retry);
 
 		if (opts.onRetry) {
@@ -114,18 +116,28 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		try {
 			res = await retry(async (_bail, attempt) => {
 				try {
-					const res = await fetch(url, opts);
+					res = await fetch(url, opts);
 
 					debug('status %d', res.status);
-					if (res.status >= 500 && res.status < 600) {
+					if ((res.status >= 500 && res.status < 600) || res.status === 429) {
 						throw new FetchRetryError(res);
 					} else {
 						return res;
 					}
 				} catch (err) {
-					const isRetry = attempt < retryOpts.retries;
 					const { method = 'GET' } = opts;
+					const isRetry = attempt <= retryOpts.retries;
+
+					if (res.status === 429 && isRetry) {
+						const retryAfter = parseInt(res.headers.get('retry-after') ?? '', 10);
+						if (retryAfter) {
+							const delay = Math.min(retryAfter * 1000, retryOpts.maxRetryAfter);
+							await new Promise(r => setTimeout(r, delay));
+						}
+					}
+
 					debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
+
 					throw err;
 				}
 			}, retryOpts);
