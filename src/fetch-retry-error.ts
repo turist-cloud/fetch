@@ -1,11 +1,21 @@
+import { Response } from 'node-fetch';
+
 export default class FetchRetryError extends Error {
+	res: Response;
 	url: string;
 	statusCode: number;
 
-	constructor(url: string, statusCode: number, statusText: string) {
-		super(statusText);
-		this.url = url;
-		this.statusCode = statusCode;
+	constructor(res: Response) {
+		super(res.statusText);
+
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, FetchRetryError);
+		}
+
+		this.res = res;
+		this.name = this.constructor.name;
+		this.url = res.url;
+		this.statusCode = res.status;
 	}
 }
 

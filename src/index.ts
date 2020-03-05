@@ -111,24 +111,33 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		debug('%s %s', opts.method || 'GET', url);
-		const res = await retry(async (_bail, attempt) => {
-			const isRetry = attempt < retryOpts.retries;
+		let res: Response;
+		try {
+			res = await retry(async (_bail, attempt) => {
+				const isRetry = attempt < retryOpts.retries;
 
-			try {
-				const res = await fetch(url, opts);
+				try {
+					const res = await fetch(url, opts);
 
-				debug('status %d', res.status);
-				if (res.status >= 500 && res.status < 600 && isRetry) {
-					throw new FetchRetryError(url, res.status, res.statusText);
-				} else {
-					return res;
+					debug('status %d', res.status);
+					if (res.status >= 500 && res.status < 600 && isRetry) {
+						throw new FetchRetryError(res);
+					} else {
+						return res;
+					}
+				} catch (err) {
+					const { method = 'GET' } = opts;
+					debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
+					throw err;
 				}
-			} catch (err) {
-				const { method = 'GET' } = opts;
-				debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
-				throw err;
+			}, retryOpts);
+		} catch (err) {
+			if (err instanceof FetchRetryError) {
+				return err.res;
 			}
-		}, retryOpts);
+
+			throw err;
+		}
 
 		if (isRedirect(res.status)) {
 			const redirectOpts = Object.assign({}, opts);
