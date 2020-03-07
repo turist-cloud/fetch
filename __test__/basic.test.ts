@@ -1,5 +1,6 @@
 import toBuffer from 'raw-body';
 import { Server, createServer, IncomingMessage, ServerResponse } from 'http';
+import { FetchOptions } from '../src/types';
 import createFetch from '../src';
 import { getAddr, listen } from './util';
 
@@ -39,6 +40,37 @@ test('retries upon http 500', async () => {
 	expect(resBody).toBe('ha');
 });
 
+test('both onRetry() functions are called', async () => {
+	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
+		res.writeHead(500);
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const onRetry1 = jest.fn((err: Error, opts: FetchOptions) => {
+		expect(err).toBeInstanceOf(Error);
+		expect(opts).toBeDefined();
+	});
+	const onRetry2 = jest.fn((err: Error) => {
+		expect(err).toBeInstanceOf(Error);
+	});
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`, {
+		onRetry: onRetry1,
+		retry: {
+			retries: 1,
+			onRetry: onRetry2
+		}
+	});
+
+	expect(res.status).toBe(500);
+	expect(onRetry1).toHaveBeenCalled();
+	expect(onRetry2).toHaveBeenCalled();
+});
+
 test('works with https', async () => {
 	const res = await fetch('https://zeit.co');
 
@@ -70,7 +102,7 @@ test('serializing arbitrary objects as JSON', async () => {
 	await listen(server);
 
 	const { port } = getAddr(server);
-	const res = await fetch(`http://127.0.0.1:${port}`, {
+	await fetch(`http://127.0.0.1:${port}`, {
 		method: 'POST',
 		body: { key: 'value' }
 	});
