@@ -1,12 +1,10 @@
-import { isIP } from 'net';
-import { parse as parseUrl, format as formatUrl } from 'url';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
 import retry from 'async-retry-ng';
 import AgentWrapper from './agent-wrapper';
 import { AgentOptions, Fetch, FetchOptions } from './types';
-import resolve from './dns-resolve';
+import parseHost from './parse-host';
 import FetchRetryError from './fetch-retry-error';
 import { isRedirect, makeRedirectOpts } from './redirect';
 
@@ -44,25 +42,8 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			throw new Error('Failed to create fetch opts');
 		}
 
-		// Workaround for node-fetch + agentkeepalive bug/issue
-		const parsedUrl = parseUrl(url);
-		const host = opts.headers.get('host') || parsedUrl.host;
-
-		if (!host) {
-			throw new TypeError('Unable to determine Host');
-		}
-
+		const [newUrl, host] = await parseHost(url, opts.headers);
 		opts.headers.set('host', host);
-
-		const ip = isIP(parsedUrl.hostname || '');
-		if (ip === 0) {
-			if (!parsedUrl.hostname) {
-				throw new Error('Unable to determine hostname');
-			}
-
-			parsedUrl.hostname = await resolve(parsedUrl.hostname);
-			url = formatUrl(parsedUrl);
-		}
 
 		// Convert Object bodies to JSON
 		if (opts.body && typeof opts.body === 'object' && !(Buffer.isBuffer(opts.body) || opts.body instanceof Readable)) {
@@ -96,7 +77,12 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		try {
 			res = await retry(async (_bail, attempt) => {
 				try {
-					res = await fetch(url, opts);
+					res = await fetch(newUrl, opts);
+					Object.defineProperty(res, 'url', {
+						get: function() { return this.realUrl },
+						set: function(v: string) { this.realUrl = v }
+					});
+					res.url = url;
 
 					debug('status %d', res.status);
 					if ((res.status >= 500 && res.status < 600) || res.status === 429) {
