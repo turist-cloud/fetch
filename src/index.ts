@@ -50,6 +50,10 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			throw new Error('Failed to create fetch opts');
 		}
 
+		if (!opts.headers.get('user-agent')) {
+			opts.headers.set('User-Agent', 'turist-fetch/1.0 (+https://github.com/turist-cloud/fetch)');
+		}
+
 		const [newUrl, host] = await parseHost(url, opts.headers);
 		opts.headers.set('host', host);
 
