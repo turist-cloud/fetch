@@ -1,5 +1,5 @@
 import { isIP } from 'net';
-import { parse as parseUrl, format as formatUrl } from 'url';
+import { parse as parseUrl } from 'url';
 import { Headers } from 'node-fetch';
 import resolve from './dns-resolve';
 
@@ -19,9 +19,9 @@ export default async function parseHost(url: string, headers: Headers) {
 			throw new Error('Unable to determine hostname');
 		}
 
-		// We need to create a new URL object here because parseURL doesn't
-		// return a functional WHATWG URL object but something that only
-		// looks similar and has the same properties.
+		// We need to create a new URL object here because url.parse() doesn't
+		// return a functional WHATWG URL object but something that only looks
+		// similar and has the same properties.
 		// TS doesn't know about the existence global WHATWG URL.
 		// @ts-ignore
 		const newUrl = new URL(parsedUrl.href);
