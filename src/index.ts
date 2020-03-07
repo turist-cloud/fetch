@@ -1,23 +1,18 @@
-import { isIP } from 'net';
-import * as http from 'http';
-import * as https from 'http';
-import { parse as parseUrl, format as formatUrl } from 'url';
-import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
 import retry from 'async-retry-ng';
+import AgentWrapper from './agent-wrapper';
 import { AgentOptions, Fetch, FetchOptions } from './types';
-import resolve from './dns-resolve';
+import parseHost from './parse-host';
 import FetchRetryError from './fetch-retry-error';
+import { isRedirect, makeRedirectOpts } from './redirect';
 
 // retry settings
 const MIN_TIMEOUT = 10;
 const MAX_RETRIES = 3;
+const MAX_RETRY_AFTER = 30000;
 const FACTOR = 5;
-
-const debug = createDebug('@turist/fetch');
-const isRedirect = (v: number) => ((v / 100) | 0) === 3
 
 const AGENT_OPTIONS = {
 	maxSockets: 50,
@@ -27,33 +22,25 @@ const AGENT_OPTIONS = {
 	freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
 };
 
-let defaultHttpGlobalAgent: http.Agent;
-let defaultHttpsGlobalAgent: https.Agent;
+const debug = createDebug('@turist/fetch');
 
-function getDefaultHttpGlobalAgent(agentOpts: http.AgentOptions) {
-	return defaultHttpGlobalAgent = defaultHttpGlobalAgent ||
-		(debug('init http agent'), new HttpAgent(agentOpts));
-}
-
-function getDefaultHttpsGlobalAgent(agentOpts: https.AgentOptions) {
-	return defaultHttpsGlobalAgent = defaultHttpsGlobalAgent ||
-		// @ts-ignore
-		(debug('init https agent'), new HttpAgent.HttpsAgent(agentOpts));
-}
-
-function getAgent(url: string, agentOpts: AgentOptions) {
-	return /^https/.test(url)
-		? getDefaultHttpsGlobalAgent(agentOpts)
-		: getDefaultHttpGlobalAgent(agentOpts);
-}
-
+// If we'd accept an AgentWrapper here then redirects wouldn't need to override
 function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
-	return async function fetchWrap(url: string, opts: FetchOptions = {}): Promise<Response> {
+	const agentWrapper = new AgentWrapper({ ...AGENT_OPTIONS, ...agentOpts });
+
+	return async function fetchWrap(url: string, fetchOpts: FetchOptions = {}): Promise<Response> {
+		const opts = Object.assign({}, fetchOpts);
+
+		if (opts.redirect) {
+			if (!['follow', 'manual', 'error'].includes(opts.redirect)) {
+				throw new Error('Invalid redirect option');
+			}
+		}
+
 		// @ts-ignore
 		if (!opts.agent) {
 			// Add default `agent` if none was provided
-			// @ts-ignore
-			opts.agent = getAgent(url, { AGENT_OPTIONS, ...agentOpts });
+			opts.agent = agentWrapper.getAgent(url);
 		}
 
 		opts.redirect = 'manual';
@@ -63,25 +50,12 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			throw new Error('Failed to create fetch opts');
 		}
 
-		// Workaround for node-fetch + agentkeepalive bug/issue
-		const parsedUrl = parseUrl(url);
-		const host = opts.headers.get('host') || parsedUrl.host;
-
-		if (!host) {
-			throw new TypeError('Unable to determine Host');
+		if (!opts.headers.get('user-agent')) {
+			opts.headers.set('User-Agent', 'turist-fetch/1.0 (+https://github.com/turist-cloud/fetch)');
 		}
 
+		const [newUrl, host] = await parseHost(url, opts.headers);
 		opts.headers.set('host', host);
-
-		const ip = isIP(parsedUrl.hostname || '');
-		if (ip === 0) {
-			if (!parsedUrl.hostname) {
-				throw new Error('Unable to determine hostname');
-			}
-
-			parsedUrl.hostname = await resolve(parsedUrl.hostname);
-			url = formatUrl(parsedUrl);
-		}
 
 		// Convert Object bodies to JSON
 		if (opts.body && typeof opts.body === 'object' && !(Buffer.isBuffer(opts.body) || opts.body instanceof Readable)) {
@@ -91,10 +65,10 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		const retryOpts = Object.assign({
-			// timeouts will be [ 10, 50, 250 ]
 			minTimeout: MIN_TIMEOUT,
 			retries: MAX_RETRIES,
 			factor: FACTOR,
+			maxRetryAfter: MAX_RETRY_AFTER,
 		}, opts.retry);
 
 		if (opts.onRetry) {
@@ -111,58 +85,58 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		debug('%s %s', opts.method || 'GET', url);
-		const res = await retry(async (_bail, attempt) => {
-			const isRetry = attempt < retryOpts.retries;
+		let res: Response;
+		try {
+			res = await retry(async (_bail, attempt) => {
+				try {
+					res = await fetch(newUrl, opts);
+					Object.defineProperty(res, 'url', {
+						get: function() { return this.realUrl },
+						set: function(v: string) { this.realUrl = v }
+					});
+					res.url = url;
 
-			try {
-				const res = await fetch(url, opts);
+					debug('status %d', res.status);
+					if ((res.status >= 500 && res.status < 600) || res.status === 429) {
+						throw new FetchRetryError(res);
+					} else {
+						return res;
+					}
+				} catch (err) {
+					const { method = 'GET' } = opts;
+					const isRetry = attempt <= retryOpts.retries;
 
-				debug('status %d', res.status);
-				if (res.status >= 500 && res.status < 600 && isRetry) {
-					throw new FetchRetryError(url, res.status, res.statusText);
-				} else {
-					return res;
+					if (res.status === 429 && isRetry) {
+						const retryAfter = parseInt(res.headers.get('retry-after') ?? '', 10);
+						if (retryAfter) {
+							const delay = Math.min(retryAfter * 1000, retryOpts.maxRetryAfter);
+							await new Promise(r => setTimeout(r, delay));
+						}
+					}
+
+					debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
+
+					throw err;
 				}
-			} catch (err) {
-				const { method = 'GET' } = opts;
-				debug(`${method} ${url} error (${err.status}). ${isRetry ? 'retrying' : ''}`, err);
-				throw err;
+			}, retryOpts);
+		} catch (err) {
+			if (err instanceof FetchRetryError) {
+				return err.res;
 			}
-		}, retryOpts);
+
+			throw err;
+		}
 
 		if (isRedirect(res.status)) {
-			const redirectOpts = Object.assign({}, opts);
-			redirectOpts.headers = new Headers(opts.headers);
-
-			// per fetch spec, for POST request with 301/302 response, or any request with 303 response, use GET when following redirect
-			if (
-				res.status === 303 ||
-				((res.status === 301 || res.status === 302) && opts.method === 'POST')
-			) {
-				redirectOpts.method = 'GET';
-				redirectOpts.body = undefined;
-				redirectOpts.headers.delete('content-length');
+			if (fetchOpts.redirect === 'manual') {
+				return res;
 			}
-
-			const location = res.headers.get('Location');
-			if (!location) {
-				throw new Error('"Location" header is missing');
-			}
-			redirectOpts.agent = getAgent(location, agentOpts);
-
-			const host = parseUrl(location).host;
-			if (!host) {
-				throw new Error('Cannot determine Host');
-			}
-
-			redirectOpts.headers.set('Host', host);
-
-			if (opts.onRedirect) {
-				opts.onRedirect(res, redirectOpts);
+			if (fetchOpts.redirect === 'error') {
+				throw new Error('Redirect rejected');
 			}
 
 			// TODO Loop detection
-			return fetchWrap(location, redirectOpts);
+			return fetchWrap(...makeRedirectOpts(res, opts, agentWrapper));
 		} else {
 			return res;
 		}

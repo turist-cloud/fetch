@@ -1,5 +1,6 @@
 import toBuffer from 'raw-body';
 import { Server, createServer, IncomingMessage, ServerResponse } from 'http';
+import { FetchOptions } from '../src/types';
 import createFetch from '../src';
 import { getAddr, listen } from './util';
 
@@ -39,6 +40,37 @@ test('retries upon http 500', async () => {
 	expect(resBody).toBe('ha');
 });
 
+test('both onRetry() functions are called', async () => {
+	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
+		res.writeHead(500);
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const onRetry1 = jest.fn((err: Error, opts: FetchOptions) => {
+		expect(err).toBeInstanceOf(Error);
+		expect(opts).toBeDefined();
+	});
+	const onRetry2 = jest.fn((err: Error) => {
+		expect(err).toBeInstanceOf(Error);
+	});
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`, {
+		onRetry: onRetry1,
+		retry: {
+			retries: 1,
+			onRetry: onRetry2
+		}
+	});
+
+	expect(res.status).toBe(500);
+	expect(onRetry1).toHaveBeenCalled();
+	expect(onRetry2).toHaveBeenCalled();
+});
+
 test('works with https', async () => {
 	const res = await fetch('https://zeit.co');
 
@@ -70,7 +102,7 @@ test('serializing arbitrary objects as JSON', async () => {
 	await listen(server);
 
 	const { port } = getAddr(server);
-	const res = await fetch(`http://127.0.0.1:${port}`, {
+	await fetch(`http://127.0.0.1:${port}`, {
 		method: 'POST',
 		body: { key: 'value' }
 	});
@@ -97,4 +129,70 @@ test('supports buffer request body', async () => {
 	const body = await res.json();
 
 	expect(body).toEqual({ body: 'foo' })
+});
+
+test('does not modify original opts', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(200);
+		res.end();
+	});
+	servers.push(server);
+	await listen(server);
+
+	const opts = {
+		method: 'GET'
+	};
+	const { port } = getAddr(server);
+	await fetch(`http://127.0.0.1:${port}`, opts);
+
+	expect(opts).toStrictEqual({ method: 'GET' });
+});
+
+test('does not follow redirect when manual mode is specified', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(300, {
+			Location: 'http://google.com'
+		});
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const url = `http://127.0.0.1:${port}`;
+	const res = await fetch(url, {
+		redirect: 'manual'
+	});
+
+	expect(res.url).toBe(url);
+});
+
+test('rejects redirect', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(300, {
+			Location: 'http://google.com'
+		});
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const url = `http://127.0.0.1:${port}`;
+	const p = fetch(url, {
+		redirect: 'error'
+	});
+
+	expect(p).rejects.toBeTruthy();
+});
+
+test('rejects invalid redirect options', async () => {
+	expect.assertions(1);
+	const p = fetch('http://google.com', {
+		// @ts-ignore
+		redirect: 'teleport'
+	});
+	expect(p).rejects.toBeTruthy();
 });
