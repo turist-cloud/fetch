@@ -31,6 +31,12 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 	return async function fetchWrap(url: string, fetchOpts: FetchOptions = {}): Promise<Response> {
 		const opts = Object.assign({}, fetchOpts);
 
+		if (opts.redirect) {
+			if (!['follow', 'manual', 'error'].includes(opts.redirect)) {
+				throw new Error('Invalid redirect option');
+			}
+		}
+
 		// @ts-ignore
 		if (!opts.agent) {
 			// Add default `agent` if none was provided
@@ -118,6 +124,13 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		if (isRedirect(res.status)) {
+			if (fetchOpts.redirect === 'manual') {
+				return res;
+			}
+			if (fetchOpts.redirect === 'error') {
+				throw new Error('Redirect rejected');
+			}
+
 			// TODO Loop detection
 			return fetchWrap(...makeRedirectOpts(res, opts, agentWrapper));
 		} else {
