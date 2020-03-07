@@ -1,24 +1,20 @@
 import { isIP } from 'net';
-import * as http from 'http';
-import * as https from 'http';
 import { parse as parseUrl, format as formatUrl } from 'url';
-import HttpAgent from 'agentkeepalive';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
 import retry from 'async-retry-ng';
+import AgentWrapper from './agent-wrapper';
 import { AgentOptions, Fetch, FetchOptions } from './types';
 import resolve from './dns-resolve';
 import FetchRetryError from './fetch-retry-error';
+import { isRedirect, makeRedirectOpts } from './redirect';
 
 // retry settings
 const MIN_TIMEOUT = 10;
 const MAX_RETRIES = 3;
 const MAX_RETRY_AFTER = 30000;
 const FACTOR = 5;
-
-const debug = createDebug('@turist/fetch');
-const isRedirect = (v: number) => ((v / 100) | 0) === 3
 
 const AGENT_OPTIONS = {
 	maxSockets: 50,
@@ -28,33 +24,17 @@ const AGENT_OPTIONS = {
 	freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
 };
 
-let defaultHttpGlobalAgent: http.Agent;
-let defaultHttpsGlobalAgent: https.Agent;
+const debug = createDebug('@turist/fetch');
 
-function getDefaultHttpGlobalAgent(agentOpts: http.AgentOptions) {
-	return defaultHttpGlobalAgent = defaultHttpGlobalAgent ||
-		(debug('init http agent'), new HttpAgent(agentOpts));
-}
-
-function getDefaultHttpsGlobalAgent(agentOpts: https.AgentOptions) {
-	return defaultHttpsGlobalAgent = defaultHttpsGlobalAgent ||
-		// @ts-ignore
-		(debug('init https agent'), new HttpAgent.HttpsAgent(agentOpts));
-}
-
-function getAgent(url: string, agentOpts: AgentOptions) {
-	return /^https/.test(url)
-		? getDefaultHttpsGlobalAgent(agentOpts)
-		: getDefaultHttpGlobalAgent(agentOpts);
-}
-
+// If we'd accept an AgentWrapper here then redirects wouldn't need to override
 function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
+	const agentWrapper = new AgentWrapper({ ...AGENT_OPTIONS, ...agentOpts });
+
 	return async function fetchWrap(url: string, opts: FetchOptions = {}): Promise<Response> {
 		// @ts-ignore
 		if (!opts.agent) {
 			// Add default `agent` if none was provided
-			// @ts-ignore
-			opts.agent = getAgent(url, { AGENT_OPTIONS, ...agentOpts });
+			opts.agent = agentWrapper.getAgent(url);
 		}
 
 		opts.redirect = 'manual';
@@ -150,38 +130,8 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		}
 
 		if (isRedirect(res.status)) {
-			const redirectOpts = Object.assign({}, opts);
-			redirectOpts.headers = new Headers(opts.headers);
-
-			// per fetch spec, for POST request with 301/302 response, or any request with 303 response, use GET when following redirect
-			if (
-				res.status === 303 ||
-				((res.status === 301 || res.status === 302) && opts.method === 'POST')
-			) {
-				redirectOpts.method = 'GET';
-				redirectOpts.body = undefined;
-				redirectOpts.headers.delete('content-length');
-			}
-
-			const location = res.headers.get('Location');
-			if (!location) {
-				throw new Error('"Location" header is missing');
-			}
-			redirectOpts.agent = getAgent(location, agentOpts);
-
-			const host = parseUrl(location).host;
-			if (!host) {
-				throw new Error('Cannot determine Host');
-			}
-
-			redirectOpts.headers.set('Host', host);
-
-			if (opts.onRedirect) {
-				opts.onRedirect(res, redirectOpts);
-			}
-
 			// TODO Loop detection
-			return fetchWrap(location, redirectOpts);
+			return fetchWrap(...makeRedirectOpts(res, opts, agentWrapper));
 		} else {
 			return res;
 		}
