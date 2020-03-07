@@ -132,11 +132,67 @@ test('supports buffer request body', async () => {
 });
 
 test('does not modify original opts', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(200);
+		res.end();
+	});
+	servers.push(server);
+	await listen(server);
+
 	const opts = {
 		method: 'GET'
 	};
-
-	await fetch('http://google.com', opts);
+	const { port } = getAddr(server);
+	await fetch(`http://127.0.0.1:${port}`, opts);
 
 	expect(opts).toStrictEqual({ method: 'GET' });
+});
+
+test('does not follow redirect when manual mode is specified', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(300, {
+			Location: 'http://google.com'
+		});
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const url = `http://127.0.0.1:${port}`;
+	const res = await fetch(url, {
+		redirect: 'manual'
+	});
+
+	expect(res.url).toBe(url);
+});
+
+test('rejects redirect', async () => {
+	const server = createServer(async (_req, res) => {
+		res.writeHead(300, {
+			Location: 'http://google.com'
+		});
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const url = `http://127.0.0.1:${port}`;
+	const p = fetch(url, {
+		redirect: 'error'
+	});
+
+	expect(p).rejects.toBeTruthy();
+});
+
+test('rejects invalid redirect options', async () => {
+	expect.assertions(1);
+	const p = fetch('http://google.com', {
+		// @ts-ignore
+		redirect: 'teleport'
+	});
+	expect(p).rejects.toBeTruthy();
 });
