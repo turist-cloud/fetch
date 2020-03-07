@@ -91,7 +91,7 @@ test('accepts a custom onRetry option', async () => {
 
 			expect(opts.onRetry).toHaveBeenCalledTimes(3)
 			expect(opts.onRetry.mock.calls[0][0]).toBeInstanceOf(Error);
-			expect(opts.onRetry.mock.calls[0][1]).toEqual(opts);
+			expect(opts.onRetry.mock.calls[0][1]).toBeTruthy();
 			expect(res.status).toBe(500);
 
 			return resolve();
@@ -124,7 +124,7 @@ test('handles Retry-After', async () => {
 
 			expect(opts.onRetry).toHaveBeenCalledTimes(1)
 			expect(opts.onRetry.mock.calls[0][0]).toBeInstanceOf(Error);
-			expect(opts.onRetry.mock.calls[0][1]).toEqual(opts);
+			expect(opts.onRetry.mock.calls[0][1]).toBeTruthy();
 			expect(res.status).toBe(429);
 			expect(endTime - startTime).toBeCloseTo(1000, -3);
 

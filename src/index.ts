@@ -28,7 +28,9 @@ const debug = createDebug('@turist/fetch');
 function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 	const agentWrapper = new AgentWrapper({ ...AGENT_OPTIONS, ...agentOpts });
 
-	return async function fetchWrap(url: string, opts: FetchOptions = {}): Promise<Response> {
+	return async function fetchWrap(url: string, fetchOpts: FetchOptions = {}): Promise<Response> {
+		const opts = Object.assign({}, fetchOpts);
+
 		// @ts-ignore
 		if (!opts.agent) {
 			// Add default `agent` if none was provided

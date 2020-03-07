@@ -130,3 +130,13 @@ test('supports buffer request body', async () => {
 
 	expect(body).toEqual({ body: 'foo' })
 });
+
+test('does not modify original opts', async () => {
+	const opts = {
+		method: 'GET'
+	};
+
+	await fetch('http://google.com', opts);
+
+	expect(opts).toStrictEqual({ method: 'GET' });
+});
