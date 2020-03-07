@@ -10,7 +10,7 @@
   "scripts": {
     "prettier": "find . -path './**/*.ts' -not -path '*/node_modules/*'  -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt -r \"$n\" || exit 1; done' sh {} +",
     "git-pre-commit": "find . -path './**/*.ts' -not -path '*/node_modules/*' -not -path '*/dist/*' -exec sh -c 'for n; do tsfmt --verify \"$n\" || exit 1; done' sh {} +",
-    "test": "jest",
+    "test": "jest --coverage",
     "build": "rm -rf ./dist && ncc build src/index.ts -m -s -o dist",
     "prepublish": "npm run build"
   },
