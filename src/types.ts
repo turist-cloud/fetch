@@ -7,7 +7,6 @@ import FetchRetryError from './fetch-retry-error';
 export interface FetchOptions extends RequestInit {
 	agent?: https.Agent | http.Agent;
 	retry?: RetryOptions;
-	redirect?: 'follow' | 'manual' | 'error' | 'manual-dont-change';
 	onRedirect?: (res: Response, redirectOpts: FetchOptions) => void;
 	onRetry?: (error: FetchRetryError, opts: FetchOptions) => void;
 	body?: any; // allows automatic JSON serialization of objects

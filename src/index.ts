@@ -52,6 +52,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		// node-fetch changes the resolves the Location header to an absolute
 		// URL with `manual` but luckily an invalid value here will turn off
 		// that feature.
+		// @ts-ignore
 		opts.redirect = 'manual-dont-change';
 
 		opts.headers = new Headers(opts.headers);
@@ -145,6 +146,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 
 				return res;
 			}
+			// @ts-ignore
 			if (fetchOpts.redirect === 'manual-dont-change') {
 				return res;
 			}
