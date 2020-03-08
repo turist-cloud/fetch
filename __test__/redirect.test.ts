@@ -38,7 +38,7 @@ describe('makeRedirectOpts()', () => {
 
 		const [location, redirectOpts] = makeRedirectOpts(res, opts, agentWrapper);
 
-		expect(location).toBe('https://no.ne');
+		expect(location).toBe('https://no.ne/');
 		expect(redirectOpts.method).toBe('GET');
 	});
 
@@ -58,7 +58,7 @@ describe('makeRedirectOpts()', () => {
 
 		const [location, redirectOpts] = makeRedirectOpts(res, opts, agentWrapper);
 
-		expect(location).toBe('https://no.ne');
+		expect(location).toBe('https://no.ne/');
 		expect(redirectOpts.method).toBe('GET');
 		expect(redirectOpts.body).not.toBeDefined();
 

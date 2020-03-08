@@ -1,4 +1,7 @@
-import { parse as parseUrl } from 'url';
+import {
+	parse as parseUrl,
+	resolve as resolveUrl
+} from 'url';
 import { Headers, Response } from 'node-fetch';
 import AgentWrapper from './agent-wrapper';
 import { FetchOptions } from './types';
@@ -24,8 +27,9 @@ export function makeRedirectOpts(res: Response, opts: FetchOptions, agentWrapper
 	if (!location) {
 		throw new Error('"Location" header is missing');
 	}
+	const locationUrl = resolveUrl(res.url, location);
 
-	const host = parseUrl(location).host;
+	const host = parseUrl(locationUrl).host;
 	if (!host) {
 		throw new Error('Cannot determine Host');
 	}
@@ -33,11 +37,11 @@ export function makeRedirectOpts(res: Response, opts: FetchOptions, agentWrapper
 	redirectOpts.headers.set('Host', host);
 
 	// TODO This might actually override user-provided agent
-	redirectOpts.agent = agentWrapper.getAgent(location);
+	redirectOpts.agent = agentWrapper.getAgent(locationUrl);
 
 	if (opts.onRedirect) {
 		opts.onRedirect(res, redirectOpts);
 	}
 
-	return [location, redirectOpts];
+	return [locationUrl, redirectOpts];
 }

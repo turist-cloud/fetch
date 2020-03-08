@@ -19,61 +19,10 @@ afterEach(() => {
 	}
 });
 
-test('retries upon http 500', async () => {
-	let i = 0;
-	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
-		if (i++ < 2) {
-			res.writeHead(500);
-			res.end();
-		} else {
-			res.end('ha');
-		}
-	});
-	servers.push(server);
-
-	await listen(server);
-
-	const { port } = getAddr(server);
-	const res = await fetch(`http://127.0.0.1:${port}`);
-	const resBody = await res.text();
-
-	expect(resBody).toBe('ha');
-});
-
-test('both onRetry() functions are called', async () => {
-	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
-		res.writeHead(500);
-		res.end();
-	});
-	servers.push(server);
-
-	await listen(server);
-
-	const onRetry1 = jest.fn((err: Error, opts: FetchOptions) => {
-		expect(err).toBeInstanceOf(Error);
-		expect(opts).toBeDefined();
-	});
-	const onRetry2 = jest.fn((err: Error) => {
-		expect(err).toBeInstanceOf(Error);
-	});
-
-	const { port } = getAddr(server);
-	const res = await fetch(`http://127.0.0.1:${port}`, {
-		onRetry: onRetry1,
-		retry: {
-			retries: 1,
-			onRetry: onRetry2
-		}
-	});
-
-	expect(res.status).toBe(500);
-	expect(onRetry1).toHaveBeenCalled();
-	expect(onRetry2).toHaveBeenCalled();
-});
-
 test('works with https', async () => {
 	const res = await fetch('https://zeit.co');
 
+	expect(res.url).toBe('https://zeit.co');
 	expect(res.headers.get('Server')).toBe('now');
 });
 
@@ -86,6 +35,68 @@ test('switches agents on redirect', async () => {
 	const res = await fetch('http://zeit.co');
 
 	expect(res.url).toBe('https://zeit.co/');
+});
+
+test('redirect sets res.url correctly to a fqhn', async () => {
+	const server = createServer(async (req, res) => {
+		const host = req.headers['host'];
+		if (!host) {
+			throw new Error('Host missing');
+		}
+
+		// @ts-ignore
+		const url = new URL(`http://${host}`);
+		url.hostname = 'localhost';
+
+		if (host.startsWith('localhost')) {
+			res.writeHead(200);
+			res.end();
+		} else {
+			res.writeHead(301, {
+				Location: url.href
+			});
+			res.end();
+		}
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`);
+	expect(res.url).toBe(`http://localhost:${port}/`);
+});
+
+test('redirect sets res.url correctly when location is relative', async () => {
+	const server = createServer(async (req, res) => {
+		const host = req.headers['host'];
+		if (!host) {
+			throw new Error('Host missing');
+		}
+
+		if (!req.url) {
+			throw new Error('Now URL');
+		}
+
+		if (req.url.includes('/root')) {
+			expect(host).toEqual(expect.stringContaining('localhost'));
+			res.writeHead(200);
+			res.end();
+		} else {
+			expect(host).toEqual(expect.stringContaining('localhost'));
+			res.writeHead(301, {
+				Location: '/root'
+			});
+			res.end();
+		}
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://localhost:${port}`);
+	expect(res.url).toBe(`http://localhost:${port}/root`);
 });
 
 test('serializing arbitrary objects as JSON', async () => {

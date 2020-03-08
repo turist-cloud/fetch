@@ -1,14 +1,10 @@
 import { Server, createServer, IncomingMessage, ServerResponse } from 'http';
 import createFetch from '../src';
-import { getAddr } from './util';
+import { FetchOptions } from '../src/types';
+import { getAddr, listen, time } from './util';
 
 const fetch = createFetch();
 let servers: Server[] = [];
-
-function time() {
-	const [seconds, nanos] = process.hrtime();
-	return seconds * 1000 + nanos / 1000000;
-}
 
 afterEach(() => {
 	while (servers.length) {
@@ -22,9 +18,8 @@ afterEach(() => {
 	}
 });
 
-test('retries upon 500', async () => {
+test('retries upon http 500', async () => {
 	let i = 0;
-
 	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
 		if (i++ < 2) {
 			res.writeHead(500);
@@ -35,22 +30,13 @@ test('retries upon 500', async () => {
 	});
 	servers.push(server);
 
-	return new Promise((resolve, reject) => {
-		server.listen(async () => {
-			const { port } = getAddr(server);
+	await listen(server);
 
-			try {
-				const res = await fetch(`http://127.0.0.1:${port}`);
-				expect(await res.text()).toBe('ha');
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`);
+	const resBody = await res.text();
 
-				resolve();
-			} catch (err) {
-				reject(err);
-			}
-		});
-
-		server.on('error', reject);
-	});
+	expect(resBody).toBe('ha');
 });
 
 test('resolves on >MAX_RETRIES', async () => {
@@ -98,7 +84,38 @@ test('accepts a custom onRetry option', async () => {
 		});
 		server.on('error', reject);
 	});
-})
+});
+
+test('both onRetry() functions are called', async () => {
+	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
+		res.writeHead(500);
+		res.end();
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const onRetry1 = jest.fn((err: Error, opts: FetchOptions) => {
+		expect(err).toBeInstanceOf(Error);
+		expect(opts).toBeDefined();
+	});
+	const onRetry2 = jest.fn((err: Error) => {
+		expect(err).toBeInstanceOf(Error);
+	});
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`, {
+		onRetry: onRetry1,
+		retry: {
+			retries: 1,
+			onRetry: onRetry2
+		}
+	});
+
+	expect(res.status).toBe(500);
+	expect(onRetry1).toHaveBeenCalled();
+	expect(onRetry2).toHaveBeenCalled();
+});
 
 test('handles Retry-After', async () => {
 	const server = createServer((_req: IncomingMessage, res: ServerResponse) => {
