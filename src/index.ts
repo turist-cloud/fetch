@@ -1,3 +1,4 @@
+import { resolve as resolveUrl } from 'url';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
@@ -32,7 +33,12 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 		const opts = Object.assign({}, fetchOpts);
 
 		if (opts.redirect) {
-			if (!['follow', 'manual', 'error'].includes(opts.redirect)) {
+			if (![
+				'follow', // Follow redirects
+				'manual', // Do not follow redirects
+				'error',  // Reject the promise on redirect
+				'manual-dont-change'
+			].includes(opts.redirect)) {
 				throw new Error('Invalid redirect option');
 			}
 		}
@@ -43,7 +49,10 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			opts.agent = agentWrapper.getAgent(url);
 		}
 
-		opts.redirect = 'manual';
+		// node-fetch changes the resolves the Location header to an absolute
+		// URL with `manual` but luckily an invalid value here will turn off
+		// that feature.
+		opts.redirect = 'manual-dont-change';
 
 		opts.headers = new Headers(opts.headers);
 		if (!(opts.headers instanceof Headers)) {
@@ -129,6 +138,14 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 
 		if (isRedirect(res.status)) {
 			if (fetchOpts.redirect === 'manual') {
+				const location = res.headers.get('location');
+				if (location) {
+					res.headers.set('Location', resolveUrl(url, location));
+				}
+
+				return res;
+			}
+			if (fetchOpts.redirect === 'manual-dont-change') {
 				return res;
 			}
 			if (fetchOpts.redirect === 'error') {

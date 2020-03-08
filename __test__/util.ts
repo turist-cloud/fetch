@@ -26,3 +26,8 @@ export function listen(server: Server, ...args: any[]) {
 		server.listen(...args);
 	});
 }
+
+export function time() {
+	const [seconds, nanos] = process.hrtime();
+	return seconds * 1000 + nanos / 1000000;
+}
