@@ -19,8 +19,7 @@ const AGENT_OPTIONS = {
 	maxSockets: 50,
 	maxFreeSockets: 20,
 	timeout: 60000,
-	freeSocketTimeout: 30000,
-	freeSocketKeepAliveTimeout: 30000 // free socket keepalive for 30 seconds
+	freeSocketTimeout: 30000
 };
 
 const debug = createDebug('@turist/fetch');
