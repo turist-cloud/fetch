@@ -11,6 +11,9 @@ export const isRedirect = (v: number) => ((v / 100) | 0) === 3
 export function makeRedirectOpts(res: Response, opts: FetchOptions, agentWrapper: AgentWrapper): [string, FetchOptions] {
 	const redirectOpts = Object.assign({}, opts);
 	redirectOpts.headers = new Headers(opts.headers);
+	// Make sure we follow the redirect. Doing this here also allows the user to
+	// change the option in onRedirect().
+	redirectOpts.redirect = 'follow';
 
 	// per fetch spec, for POST request with 301/302 response,
 	// or any request with 303 response, use GET when following redirect

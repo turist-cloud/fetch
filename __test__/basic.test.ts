@@ -99,6 +99,40 @@ test('redirect sets res.url correctly when location is relative', async () => {
 	expect(res.url).toBe(`http://localhost:${port}/root`);
 });
 
+test('follows multiple redirects', async () => {
+	let redirectCount = 0;
+	const server = createServer(async (req, res) => {
+		const host = req.headers['host'];
+		if (!host) {
+			throw new Error('Host missing');
+		}
+
+		if (!req.url) {
+			throw new Error('Now URL');
+		}
+
+		if (req.url.includes('/root') && redirectCount === 2) {
+			res.writeHead(200);
+			res.end();
+		} else {
+			redirectCount++;
+
+			res.writeHead(307, {
+				Location: '/root'
+			});
+			res.end();
+		}
+	});
+	servers.push(server);
+
+	await listen(server);
+
+	const { port } = getAddr(server);
+	const res = await fetch(`http://127.0.0.1:${port}`);
+	expect(res.url).toBe(`http://127.0.0.1:${port}/root`);
+	expect(redirectCount).toBe(2);
+});
+
 test('serializing arbitrary objects as JSON', async () => {
 	const server = createServer(async (req, res) => {
 		const body = await toBuffer(req);
