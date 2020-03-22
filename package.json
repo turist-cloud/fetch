@@ -24,7 +24,7 @@
     "@zeit/git-hooks": "0.1.4",
     "@zeit/ncc": "0.21.1",
     "agentkeepalive": "4.1.0",
-    "async-retry-ng": "1.0.2",
+    "async-retry-ng": "2.0.0",
     "debug": "4.1.1",
     "jest": "25.1.0",
     "lint-staged": "10.0.7",

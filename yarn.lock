@@ -641,10 +641,10 @@ astral-regex@^1.0.0:
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-1.0.0.tgz#6c8c3fb827dd43ee3918f27b82782ab7658a6fd9"
   integrity sha512-+Ryf6g3BKoRc7jfp7ad8tM4TtMiaWvbF/1/sQcZPkkS7ag3D5nMBCe2UfOTONtAkaG0tO0ij3C5Lwmf1EiyjHg==
 
-async-retry-ng@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/async-retry-ng/-/async-retry-ng-1.0.2.tgz#eb9d8313af649404d4cf862075f662f29b05c510"
-  integrity sha512-79JeZLgRbo8E4RI+/O3D4+Lt0ZVARI5Qw9OtTBJzGB7nuORKciwb3N3+5/ATsOctpjkj6Jres74UTaWOdapkaQ==
+async-retry-ng@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/async-retry-ng/-/async-retry-ng-2.0.0.tgz#2a1b71f45b1339cc4a24da7150fa58e9a0c405ad"
+  integrity sha512-meSKrvYhWBHs12+8OSPl3wjBoAxYY1eOGkdLvudMZwXEsI2ZpoBNQAvKrHoAoW4Pgoa8+T6TftLippj1S7GP1Q==
 
 asynckit@^0.4.0:
   version "0.4.0"
