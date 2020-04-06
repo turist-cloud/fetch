@@ -176,7 +176,7 @@ export default function setup(fetch?: Fetch, options?: AgentOptions): Fetch {
 
 	if (typeof fetch !== 'function') {
 		throw new Error(
-			"fetch() argument isn't a function; did you forget to initialize your @zeit/fetch import?"
+			"fetch() argument isn't a function; did you forget to initialize your @turist/fetch import?"
 		);
 	}
 
