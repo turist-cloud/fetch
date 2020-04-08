@@ -6,7 +6,7 @@ import { Headers, Response } from 'node-fetch';
 import AgentWrapper from './agent-wrapper';
 import { FetchOptions } from './types';
 
-export const isRedirect = (v: number) => ((v / 100) | 0) === 3
+export const isRedirect = (v: number) => [300, 303, 301, 307, 302, 305, 308].includes(v);
 
 export function makeRedirectOpts(res: Response, opts: FetchOptions, agentWrapper: AgentWrapper): [string, FetchOptions] {
 	const redirectOpts = Object.assign({}, opts);
