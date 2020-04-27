@@ -115,7 +115,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 					const { method = 'GET' } = opts;
 					const isRetry = attempt <= retryOpts.retries;
 
-					if (res.status === 429 && isRetry) {
+					if (res && res.status === 429 && isRetry) {
 						const retryAfter = parseInt(res.headers.get('retry-after') ?? '', 10);
 						if (retryAfter) {
 							const delay = Math.min(retryAfter * 1000, retryOpts.maxRetryAfter);
