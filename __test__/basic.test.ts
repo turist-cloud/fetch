@@ -20,21 +20,21 @@ afterEach(() => {
 });
 
 test('works with https', async () => {
-	const res = await fetch('https://zeit.co');
+	const res = await fetch('https://vercel.com');
 
-	expect(res.url).toBe('https://zeit.co');
+	expect(res.url).toBe('https://vercel.com');
 	expect(res.headers.get('Server')).toBe('now');
 });
 
 /**
- * We know that http://zeit.co redirects to https so we can use it
+ * We know that http://vercel.com redirects to https so we can use it
  * as a test to make sure that we switch the agent when the it
  * happens
  */
 test('switches agents on redirect', async () => {
-	const res = await fetch('http://zeit.co');
+	const res = await fetch('http://vercel.com');
 
-	expect(res.url).toBe('https://zeit.co/');
+	expect(res.url).toBe('https://vercel.com/');
 });
 
 test('redirect sets res.url correctly to a fqhn', async () => {
