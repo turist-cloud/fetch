@@ -1,6 +1,6 @@
 {
   "name": "@turist/fetch",
-  "version": "7.1.5",
+  "version": "7.1.6",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
   "files": [
