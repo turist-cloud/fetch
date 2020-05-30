@@ -3,6 +3,7 @@
   "version": "7.1.6",
   "description": "Opinionated `fetch` optimized for use inside microservices",
   "license": "MIT",
+  "repository": "turist-cloud/fetch",
   "files": [
     "dist/"
   ],
