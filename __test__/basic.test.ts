@@ -23,7 +23,7 @@ test('works with https', async () => {
 	const res = await fetch('https://vercel.com');
 
 	expect(res.url).toBe('https://vercel.com');
-	expect(res.headers.get('Server')).toBe('now');
+	expect(res.headers.get('Server')).toBe('Vercel');
 });
 
 /**
