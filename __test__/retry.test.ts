@@ -46,7 +46,7 @@ test('resolves on >MAX_RETRIES', async () => {
 	});
 	servers.push(server);
 
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		server.listen(async () => {
 			const { port } = getAddr(server);
 			const res = await fetch(`http://127.0.0.1:${port}`);
@@ -66,7 +66,7 @@ test('accepts a custom onRetry option', async () => {
 	});
 	servers.push(server);
 
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		const opts = {
 			onRetry: jest.fn()
 		}
@@ -124,7 +124,7 @@ test('handles Retry-After', async () => {
 	});
 	servers.push(server);
 
-	return new Promise((resolve, reject) => {
+	return new Promise<void>((resolve, reject) => {
 		const opts = {
 			onRetry: jest.fn(),
 			retry: {

@@ -111,7 +111,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 					} else {
 						return res;
 					}
-				} catch (err) {
+				} catch (err: any) {
 					const { method = 'GET' } = opts;
 					const isRetry = attempt <= retryOpts.retries;
 
