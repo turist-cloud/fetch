@@ -24,6 +24,3 @@ import createFetch from '@turist/fetch';
 
 const fetch = createFetch();
 ```
-
-If no fetch implementation is supplied, it will attempt to use peerDep
-`node-fetch`.

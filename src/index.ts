@@ -1,5 +1,4 @@
 import { resolve as resolveUrl } from 'url';
-import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
 import retry from 'async-retry-ng';
@@ -103,6 +102,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 						get: function() { return this.realUrl },
 						set: function(v: string) { this.realUrl = v }
 					});
+					// @ts-ignore
 					res.url = url;
 
 					debug('status %d', res.status);

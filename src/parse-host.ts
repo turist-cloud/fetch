@@ -1,6 +1,5 @@
 import { isIP } from 'net';
 import { parse as parseUrl } from 'url';
-import { Headers } from 'node-fetch';
 import resolve from './dns-resolve';
 
 export default async function parseHost(url: string, headers: Headers) {

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
-    "lib": ["esnext"],
+    "lib": ["dom","esnext"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -12,7 +12,7 @@
     "noUnusedParameters": false,
     "removeComments": true,
     "strict": true,
-    "target": "ES2018",
+    "target": "es2022",
     "inlineSourceMap": true,
     "types": ["jest","node"],
     "typeRoots": [

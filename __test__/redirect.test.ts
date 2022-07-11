@@ -1,5 +1,4 @@
 import AgentWrapper from '../src/agent-wrapper';
-import { Response } from 'node-fetch';
 import { isRedirect, makeRedirectOpts } from '../src/redirect';
 
 describe('isRedirect()', () => {

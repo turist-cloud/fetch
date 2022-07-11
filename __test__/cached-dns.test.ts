@@ -1,5 +1,4 @@
 import { Server, createServer, IncomingMessage, ServerResponse } from 'http';
-import { Response } from 'node-fetch';
 import createFetch from '../src';
 import { getAddr, listen } from './util';
 import { FetchOptions } from '../src/types';

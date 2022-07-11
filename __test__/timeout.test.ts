@@ -1,9 +1,8 @@
 import { Server, createServer, IncomingMessage, ServerResponse } from "http";
-import nodeFetch from "node-fetch";
 import { getAddr, listen } from "./util";
 import createFetch from "../src";
 
-const fetch = createFetch(nodeFetch, { timeout: 2000 });
+const fetch = createFetch({ timeout: 2000 });
 let servers: Server[] = [];
 
 afterEach(() => {

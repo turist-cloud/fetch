@@ -1,5 +1,4 @@
 import { isIP } from 'net';
-import { Headers } from 'node-fetch';
 import parseHost from '../src/parse-host';
 
 test('Parses a domain to an IP address', async () => {

@@ -2,7 +2,6 @@ import {
 	parse as parseUrl,
 	resolve as resolveUrl
 } from 'url';
-import { Headers, Response } from 'node-fetch';
 import AgentWrapper from './agent-wrapper';
 import { FetchOptions } from './types';
 
