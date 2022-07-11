@@ -161,30 +161,6 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 	};
 }
 
-export default function setup(fetch?: Fetch, options?: AgentOptions): Fetch {
-	if (!fetch) {
-		fetch = require('node-fetch');
-	}
-
-	// @ts-ignore
-	const fd = fetch.default;
-	if (fd) {
-		// combines "fetch.Headers" with "fetch.default" function.
-		// workaround for "fetch.Headers is not a constructor"
-		fetch = Object.assign((...args: unknown[]) => fd(...args), fd, fetch);
-	}
-
-	if (typeof fetch !== 'function') {
-		throw new Error(
-			"fetch() argument isn't a function; did you forget to initialize your @turist/fetch import?"
-		);
-	}
-
-	fetch = setupFetch(fetch, options);
-
-	if (!fetch) {
-		throw new Error('Unable to setup fetch');
-	}
-
-	return fetch;
+export default function setup(options?: AgentOptions): Fetch {
+	return setupFetch(fetch, options);
 }
