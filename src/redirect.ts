@@ -1,7 +1,4 @@
-import {
-	parse as parseUrl,
-	resolve as resolveUrl
-} from 'url';
+import { URL } from 'url';
 import { Headers, Response } from 'node-fetch';
 import AgentWrapper from './agent-wrapper';
 import { FetchOptions } from './types';
@@ -30,9 +27,11 @@ export function makeRedirectOpts(res: Response, opts: FetchOptions, agentWrapper
 	if (!location) {
 		throw new Error('"Location" header is missing');
 	}
-	const locationUrl = resolveUrl(res.url, location);
+	// Handle both absolute and relative URLs
+	// If location is absolute, use it directly; if relative, resolve against res.url
+	const locationUrl = new URL(location, res.url || 'http://placeholder').href;
 
-	const host = parseUrl(locationUrl).host;
+	const host = new URL(locationUrl).host;
 	if (!host) {
 		throw new Error('Cannot determine Host');
 	}

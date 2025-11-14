@@ -1,4 +1,4 @@
-import { resolve as resolveUrl } from 'url';
+import { URL } from 'url';
 import { Headers, Response } from 'node-fetch';
 import { Readable } from 'stream';
 import createDebug from 'debug';
@@ -140,7 +140,7 @@ function setupFetch(fetch: Fetch, agentOpts: AgentOptions = {}): any {
 			if (fetchOpts.redirect === 'manual') {
 				const location = res.headers.get('location');
 				if (location) {
-					res.headers.set('Location', resolveUrl(url, location));
+					res.headers.set('Location', new URL(location, url).href);
 				}
 
 				return res;

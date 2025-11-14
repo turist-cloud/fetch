@@ -1,12 +1,12 @@
 import dns from 'dns';
-import LRU from 'lru-cache';
+import { LRUCache } from 'lru-cache';
 import retry, { Options as RetryOptions } from 'async-retry-ng';
 import resolve4 from './resolve4';
 import resolve6 from './resolve6';
 
 const lruOptions = { max: 500 };
-let cache4: LRU<string, string | Promise<string>>;
-let cache6: LRU<string, string | Promise<string>>;
+let cache4: LRUCache<string, string | Promise<string>>;
+let cache6: LRUCache<string, string | Promise<string>>;
 
 export const localhostRegex = /(?:\.|^)localhost\.?$/
 
@@ -49,7 +49,7 @@ export default async function dnsResolve(host: string, options: Options = {}) {
 	}
 
 	if (refreshCache) {
-		cache.del(host);
+		cache.delete(host);
 	} else {
 		const ip = cache.get(host);
 		if (ip) return await ip;
@@ -62,15 +62,15 @@ export default async function dnsResolve(host: string, options: Options = {}) {
 			throw new DNSError('ENOTFOUND', host);
 		}
 		const ttl = Math.max(rec.ttl, minimumCacheTime);
-		cache.set(host, rec.address, ttl * 1000);
+		cache.set(host, rec.address, { ttl: ttl * 1000 });
 		return rec.address;
 	})();
 
-	cache.set(host, p, 5000);
+	cache.set(host, p, { ttl: 5000 });
 	return p;
 }
 
 export function setupCache() {
-	cache4 = new LRU(lruOptions);
-	cache6 = new LRU(lruOptions);
+	cache4 = new LRUCache(lruOptions);
+	cache6 = new LRUCache(lruOptions);
 }
