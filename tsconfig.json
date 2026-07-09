@@ -12,9 +12,10 @@
     "noUnusedParameters": false,
     "removeComments": true,
     "strict": true,
-    "target": "ES2018",
+    "target": "ES2020",
+    "outDir": "dist",
     "inlineSourceMap": true,
-    "types": ["jest","node"],
+    "types": ["node"],
     "typeRoots": [
       "./node_modules/@types"
     ]
