@@ -1,22 +1,20 @@
-import * as http from 'http';
-import * as https from 'http';
-import { Options as RetryOptions } from 'async-retry-ng';
-import { Request, RequestInit, Response } from 'node-fetch';
-import FetchRetryError from './fetch-retry-error';
+import type { Options as RetryOptions } from 'async-retry-ng';
+import type { Dispatcher } from 'undici';
+import type FetchRetryError from './fetch-retry-error';
 
 export interface FetchOptions extends RequestInit {
-	agent?: https.Agent | http.Agent;
-	retry?: RetryOptions;
-	onRedirect?: (res: Response, redirectOpts: FetchOptions) => void;
+	/** undici dispatcher (Agent). Injected automatically if not provided. */
+	dispatcher?: Dispatcher;
+	retry?: RetryOptions & { maxRetryAfter?: number };
 	onRetry?: (error: FetchRetryError, opts: FetchOptions) => void;
+	/**
+	 * Per-request wall-clock deadline in ms. node-fetch honored a `timeout`
+	 * option; undici does not, so we translate it to an AbortSignal.
+	 */
+	timeout?: number;
+	/** Required by undici when the body is a Node stream. */
+	duplex?: 'half';
 	body?: any; // allows automatic JSON serialization of objects
 }
 
-export type Fetch = {
-	(
-		url: string | Request,
-		options?: FetchOptions
-	): Promise<Response>
-}
-
-export type AgentOptions = http.AgentOptions | https.AgentOptions;
+export type Fetch = (url: string, options?: FetchOptions) => Promise<Response>;
